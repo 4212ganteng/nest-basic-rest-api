@@ -13,6 +13,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { ResponseUser } from './dto/response-user';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
+import { UserLoginDto } from './dto/login-user.dto';
 
 @Controller('/api/users')
 export class UserController {
@@ -24,6 +25,18 @@ export class UserController {
     @Body() createUserDto: CreateUserDto,
   ): Promise<WebResponse<ResponseUser>> {
     const result = await this.userService.create(createUserDto);
+    return {
+      data: result,
+    };
+  }
+
+  @Post('/login')
+  @HttpCode(200)
+  async login(
+    @Body() request: UserLoginDto,
+  ): Promise<WebResponse<ResponseUser>> {
+    const result = await this.userService.login(request);
+
     return {
       data: result,
     };

@@ -8,6 +8,8 @@ import { UserValidation } from './user.validation';
 import * as bcrypt from 'bcrypt';
 import { ValidationService } from '../common/validation.service';
 import { PrismaService } from '../common/prisma.service';
+import { UserLoginDto } from './dto/login-user.dto';
+import { v4 as uuid } from 'uuid';
 @Injectable()
 export class UserService {
   constructor(
@@ -44,6 +46,50 @@ export class UserService {
     return {
       username: user.username,
       name: user.name,
+    };
+  }
+
+  async login(request: UserLoginDto): Promise<ResponseUser> {
+    this.logger.info(`User login with data : ${JSON.stringify(request)}`);
+
+    let userRequest: UserLoginDto = this.validationService.validate(
+      UserValidation.LOGINUSER,
+      request,
+    );
+
+    let user = await this.prismaService.user.findUnique({
+      where: {
+        username: userRequest.username,
+      },
+    });
+
+    if (!user) {
+      throw new HttpException('Usernam or password is incorrect', 401);
+    }
+
+    const isPasswordvalid = await bcrypt.compare(
+      userRequest.password,
+      user.password,
+    );
+
+    if (!isPasswordvalid) {
+      throw new HttpException('Usernam or password is incorrect', 401);
+    }
+
+    user = await this.prismaService.user.update({
+      where: {
+        username: userRequest.username,
+      },
+
+      data: {
+        token: uuid(),
+      },
+    });
+
+    return {
+      username: user.username,
+      name: user.name,
+      token: user.token,
     };
   }
 
