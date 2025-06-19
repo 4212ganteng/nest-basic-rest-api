@@ -1,23 +1,25 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { WebResponse } from 'src/model/web.model';
+import { CreateUserDto } from './dto/create-user.dto';
 import { ResponseUser } from './dto/response-user';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserService } from './user.service';
 
-@Controller('user')
+@Controller('/api/users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
+  @HttpCode(200)
   async create(
     @Body() createUserDto: CreateUserDto,
   ): Promise<WebResponse<ResponseUser>> {

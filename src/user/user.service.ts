@@ -1,13 +1,13 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ValidationService } from 'src/common/validation.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { PrismaService } from 'src/common/prisma.service';
 import { ResponseUser } from './dto/response-user';
 import { UserValidation } from './user.validation';
 import * as bcrypt from 'bcrypt';
+import { ValidationService } from '../common/validation.service';
+import { PrismaService } from '../common/prisma.service';
 @Injectable()
 export class UserService {
   constructor(
