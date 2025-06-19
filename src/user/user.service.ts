@@ -1,11 +1,50 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-
+import { ValidationService } from 'src/common/validation.service';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { PrismaService } from 'src/common/prisma.service';
+import { ResponseUser } from './dto/response-user';
+import { UserValidation } from './user.validation';
+import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UserService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(
+    private validationService: ValidationService,
+    @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
+    private prismaService: PrismaService,
+  ) {}
+
+  async create(createUserDto: CreateUserDto): Promise<ResponseUser> {
+    this.logger.info(
+      `Cretaing user with data : ${JSON.stringify(createUserDto)}`,
+    );
+    const requestBody: CreateUserDto = this.validationService.validate(
+      UserValidation.CREATEUSER,
+      createUserDto,
+    );
+
+    const totalUserWithSameUsername = await this.prismaService.user.count({
+      where: {
+        username: requestBody.username,
+      },
+    });
+
+    if (totalUserWithSameUsername != 0) {
+      throw new HttpException('Username already exist', 400);
+    }
+
+    requestBody.password = await bcrypt.hash(requestBody.password, 10);
+
+    const user = await this.prismaService.user.create({
+      data: requestBody,
+    });
+
+    return {
+      username: user.username,
+      name: user.name,
+    };
   }
 
   findAll() {
