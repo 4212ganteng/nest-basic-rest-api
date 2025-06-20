@@ -52,7 +52,7 @@ export class UserService {
   async login(request: UserLoginDto): Promise<ResponseUser> {
     this.logger.info(`User login with data : ${JSON.stringify(request)}`);
 
-    let userRequest: UserLoginDto = this.validationService.validate(
+    const userRequest: UserLoginDto = this.validationService.validate(
       UserValidation.LOGINUSER,
       request,
     );
